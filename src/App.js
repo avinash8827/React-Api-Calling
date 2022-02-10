@@ -1,24 +1,35 @@
 import './App.css';
-import { Button, Pagination, Table } from 'react-bootstrap';
+//  { Named Import }
+
+import { Button, Form, Pagination, Table } from 'react-bootstrap';
 import React, { useState } from 'react';
 
 const config = require('./config.json')
 function App() {
+
+
   const [student,setStudent] = useState({
     data:[]
   });//Empty Array
 
-  const [paginationItem,setPaginationItem] = useState([<Pagination.Item >1</Pagination.Item>,<Pagination.Item>2</Pagination.Item>,<Pagination.Item>3</Pagination.Item>])// Empty Array
+  const [paginationItem,setPaginationItem] = useState([])
 
+  //2. Functions defination
+  let goToPage = (e)=>{
+    console.log(e.target.innerHTML);
+    var pageno = parseInt(e.target.innerHTML);
+    getStudents(pageno);
+  }
   let first = (e)=>{
-    //console.log('First');
+    console.log('First');
     if(student.meta.pagination.page !== 1){
-      getStudents(1); 
+      getStudents(1); // Actual Arguemtn
     }
     
     
   }
   let last = (e)=>{
+    console.log('Last');
 
     if(student.meta.pagination.page !== student.meta.pagination.pageCount){
       getStudents(student.meta.pagination.pageCount);
@@ -26,6 +37,7 @@ function App() {
 
   }
   let prev = (e)=>{
+    console.log('Prev');
     if(student.meta.pagination.page !== 1){
       getStudents(student.meta.pagination.page - 1 );
     }
@@ -33,6 +45,7 @@ function App() {
 
   }
   let next = (e)=>{
+    console.log('Next');
     if(student.meta.pagination.page !== student.meta.pagination.pageCount){
       getStudents(student.meta.pagination.page + 1);
     }
@@ -41,16 +54,27 @@ function App() {
   }
 
   let getStudents = (pageno=1)=>{
+    console.log(config.base_url);
     try {
         fetch(`${config.base_url}/api/students?pagination[page]=${pageno}&pagination[pageSize]=10`)
         .then((data)=>{
+          //let make data json readable
           return data.json();
         }).then((data)=>{
           console.log(data);
-
           setStudent(data);
-         
+          var start = data.meta.pagination.page
+          var arr = []; //empty array;
+          for (let i = start; i <= data.meta.pagination.pageCount; i++) {
+            if(i == start){
+              arr.push(<Pagination.Item active onClick={(e)=>{ goToPage(e) }}>{i}</Pagination.Item>); 
+            }else{
+              arr.push(<Pagination.Item onClick={(e)=>{ goToPage(e) }}>{i}</Pagination.Item>);
+            }
+            
+          }
 
+          setPaginationItem(arr)
 
         }).catch((err)=>{
           console.log(err);
@@ -61,14 +85,12 @@ function App() {
       console.log(error)
     }
   }
-  
 
-  
+  //3. Return statement JSX
   return (
     <>
-      
           <h1>Read Operation</h1>
-          <Button onClick={(e)=>{ getStudents() }} variant="outline-dark">Get My Friends</Button>
+          <Button onClick={(e)=>{ getStudents() }} variant="outline-dark">Get My Data</Button>
         
         <br />
         <br />
@@ -86,8 +108,8 @@ function App() {
               <tbody>
                 {
                   student.data.map(function(currentValue, index, arr){
-                   // console.log(arr[index].id);
-                   // console.log(arr[index].attributes.name);
+                    console.log(arr[index].id);
+                    console.log(arr[index].attributes.name);
                     return (
                         <tr key={index}>
                           <td>{arr[index].id}</td>
@@ -110,9 +132,9 @@ function App() {
               <Pagination.Prev onClick={(e)=>{ prev(e); }} />
 
               {
-                paginationItem.length > 0 &&
+              
                 paginationItem.map(function(currentValue, index, arr){
-                    return currentValue
+                    return currentValue//JSX
                 })
               }
               
