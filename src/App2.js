@@ -1,3 +1,4 @@
+import logo from './logo.svg';
 import './App.css';
 //  { Named Import }
 
@@ -5,27 +6,24 @@ import { Button, Form, Pagination, Table } from 'react-bootstrap';
 import React, { useState } from 'react';
 
 const config = require('./config.json')
-function App() {
 
+// Functional COmpoent
+
+function App2() {
+  //1. State/ Hook Variables
 
   const [student,setStudent] = useState({
     data:[]
   });//Empty Array
-
-  const [paginationItem,setPaginationItem] = useState([])
+  const [paginationItem,setPaginationItem] = useState([]);
 
   //2. Functions defination
-  let goToPage = (e)=>{
-    console.log(e.target.innerHTML);
-    var pageno = parseInt(e.target.innerHTML);
-    getStudents(pageno);
-  }
   let first = (e)=>{
     console.log('First');
     if(student.meta.pagination.page !== 1){
       getStudents(1); // Actual Arguemtn
     }
-    
+   
     
   }
   let last = (e)=>{
@@ -39,9 +37,8 @@ function App() {
   let prev = (e)=>{
     console.log('Prev');
     if(student.meta.pagination.page !== 1){
-      getStudents(student.meta.pagination.page - 1 );
+      getStudents(student.meta.pagination.page - 1); // Actual Arguemtn
     }
-    
 
   }
   let next = (e)=>{
@@ -52,30 +49,60 @@ function App() {
     
 
   }
+  let getStudents2 = (e)=>{
+    console.log(student);
 
-  let getStudents = (pageno=1)=>{
+  }
+  let handleGoTo = (e) => {
+    //console.log(e.target.innerHTML);
+    console.log(e.target);
+    var pageno = e.target.innerHTML;
+    console.log(pageno);
+    getStudents(parseInt(pageno));
+
+    var li = e.target.closest('ul').querySelectorAll('li');
+    li.forEach(element => {
+      element.classList.remove('active');
+    });
+    var x = e.target.closest('li').classList;
+    x.add('active');
+    //x.add('disabled');
+   
+    
+  }
+
+  let getStudents = (pageno=1)=>{// e = event //ES6 Fat arrow functions // default argument
     console.log(config.base_url);
+    console.log('good morning')
+    //Alway wrap the api calling code inside trycatch block
     try {
-        fetch(`${config.base_url}/api/students?pagination[page]=${pageno}&pagination[pageSize]=10`)
+        //Call the api
+        // Fetch API
+        //AXIOS
+
+        //What is the api
+        //Fetch API with Promise Chain
+        fetch(`${config.base_url}/api/friends?pagination[page]=${pageno}&pagination[pageSize]=10`)
         .then((data)=>{
           //let make data json readable
           return data.json();
         }).then((data)=>{
           console.log(data);
-          setStudent(data);
-          var start = data.meta.pagination.page
-          var arr = []; //empty array;
-          for (let i = start; i <= data.meta.pagination.pageCount; i++) {
-            if(i == start){
-              arr.push(<Pagination.Item active onClick={(e)=>{ goToPage(e) }}>{i}</Pagination.Item>); 
-            }else{
-              arr.push(<Pagination.Item onClick={(e)=>{ goToPage(e) }}>{i}</Pagination.Item>);
-            }
-            
+
+          //Set karne se pahle
+          //console.log('before set',student);
+          //not set the student data in student hook variable
+          if(student.meta){
+            PaginationItem()
           }
+          setStudent(data);
+          //Set karne ke baad data kya hai
 
-          setPaginationItem(arr)
 
+          //array.map(function(currentValue, index, arr));
+          //PaginationItem()
+          
+          
         }).catch((err)=>{
           console.log(err);
         });
@@ -86,11 +113,29 @@ function App() {
     }
   }
 
+  function PaginationItem(){
+    var rows = [];
+    //console.log(student);
+    for (var i = 1; i <= student.meta.pagination.pageCount; i++) {
+      if(i === student.meta.pagination.page){
+        rows.push(<Pagination.Item active key={i} onClick={(e)=>{ handleGoTo(e) }}>{i}</Pagination.Item>);  
+      }else{
+        rows.push(<Pagination.Item key={i} onClick={(e)=>{ handleGoTo(e) }}>{i}</Pagination.Item>);  
+      }
+
+    }
+    console.log('rows',rows)
+    setPaginationItem(rows);
+    
+  }
+
   //3. Return statement JSX
   return (
     <>
-          <h1>Read Operation</h1>
-          <Button onClick={(e)=>{ getStudents() }} variant="outline-dark">Get My Data</Button>
+        <h1 className="d-flex justify-content-center">Read Operation with Pagination</h1>
+        <div className="d-flex justify-content-center">
+          <Button onClick={(e)=>{ getStudents() }}>Get My Friends</Button>
+        </div>
         
         <br />
         <br />
@@ -130,15 +175,11 @@ function App() {
             <Pagination className="d-flex justify-content-center">
               <Pagination.First onClick={(e)=>{ first(e); }} />
               <Pagination.Prev onClick={(e)=>{ prev(e); }} />
-
               {
-              
                 paginationItem.map(function(currentValue, index, arr){
-                    return currentValue//JSX
+                  return currentValue;
                 })
               }
-              
-
               <Pagination.Next onClick={(e)=>{ next(e); }} />
               <Pagination.Last onClick={(e)=>{ last(e); }} />
             </Pagination>
